@@ -7,7 +7,7 @@ import {
   resizeCanvasToDisplaySize,
   showWebGLInfo,
   setGeometry,
-} from "../../utils";
+} from "../06_3d_ortho_depth/util";
 
 function main() {
   /**
