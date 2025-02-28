@@ -1,1 +1,1 @@
-import "./06_3d_ortho_depth/06";
+import "./07_3d_perspective/07";
