@@ -1,1 +1,1 @@
-import "./07_3d_perspective/07";
+import "./08_camera/08";
