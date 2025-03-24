@@ -6,9 +6,10 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   resolve: {
-    alias: {
-      "~/": `${__dirname}/src/`, // path.join(__dirname, "src/") でも可
-    },
+    alias: [
+      { find: /\.(vs|fs)$/, replacement: "$&?raw" },
+      { find: "~/", replacement: `${__dirname}/src/` },
+    ],
   },
   optimizeDeps: {
     esbuildOptions: {
