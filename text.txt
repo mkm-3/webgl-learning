@@ -1,8 +1,8 @@
 以下のWebGlのコードで，ユニフォーム変数の "u_rotation" のlocationが取得できません．
 原因を教えてください．
 ```main.ts
-import fragmentShaderSource from "./shader.fs?raw";
-import vertexShaderSource from "./shader.vs?raw";
+import fragmentShaderSource from "./shader.fs";
+import vertexShaderSource from "./shader.vs";
 import {
   assertNonNullable,
   createProgram,
