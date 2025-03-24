@@ -3,17 +3,8 @@ precision mediump float;
 
 out vec4 fragColor;
 
-uniform float time;
+uniform float u_time;
 uniform vec2 u_resolution;
-
-// 定数
-vec3 spherePos = vec3(0.0);
-float radius = 0.75;
-float cameraZ = 25.0;
-
-// rayの設定に使う定数
-int maxRaySteps = 100;
-float stepSize = 1.0;
 
 // 球の中心とrayの座標の距離を計算する
 float calc_dist(vec3 pos, float size)
@@ -74,7 +65,7 @@ float scene(vec3 pos)
     return 0.1 - length(pos) * 0.05 + fbm(pos * 0.3);
 }
 
-mat3 camera(vec3 ro, vec3 ta)
+mat3 get_camera_mat(vec3 ro, vec3 ta)
 {
     vec3 cw = normalize(ta - ro);
     vec3 cp = vec3(0.0, 1.0, 0.0);
@@ -86,6 +77,9 @@ mat3 camera(vec3 ro, vec3 ta)
 void main() {
   // -1.0 ~ 1.0 の空間を定義
   vec2 uv = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.x, u_resolution.y);
+  
+  // カメラの位置
+  float cameraZ = 25.0;
 
   // レイの発射元の位置 = カメラの位置
   vec3 cameraPos = vec3(0.0, 0.0, cameraZ);
@@ -100,20 +94,24 @@ void main() {
   // 光源の位置
   vec3 lightPos = normalize(vec3(1.0));
 
-  // 定数
+  // 係数
   float T = 1.0; // 透過率：transmittance
   float A = 100.0; // 吸収率：absorption
+
+  // レイマーチング関連の定数
   const int sampleCount = 64; // レイマーチングのサンプル数
-  const int sampleLightCount = 6; // レイのサンプル点から光源へ向かうベクトル上のサンプル数
-  float zMax = 40.0;
-  float zStep = zMax / float(sampleCount);
-  float zMaxl = 20.0;
-  float zStepl = zMaxl / float(sampleLightCount);
+  const float zMax = 40.0;
+  const float zStep = zMax / float(sampleCount);
+
+  // 雲関連の定数
+  vec4 cloudColor = vec4(1.0); // 雲は白色とする
+  vec3 targetPos = vec3(0.0);
+  float cloudDepth = 1.5;
 
   // カメラ
-  mat3 c = camera(rayOrigin, vec3(0.0));
-  float targetDepth = 1.3;
-  vec3 dir = c * normalize(vec3(uv, targetDepth));
+  vec3 camera_origin = rayOrigin;
+  mat3 c = get_camera_mat(camera_origin, targetPos);
+  vec3 dir = c * normalize(vec3(uv, cloudDepth));
 
   vec3 rayPos = rayOrigin;
 
@@ -126,17 +124,18 @@ void main() {
     {
       float tmp = density / float(sampleCount);
 
+      // 透過率を計算
       T *= 1.0  - (tmp * A);
 
+      // ある程度光が吸収されていたら，十分濃くなったとみなしてレイマーチングを終了
       if(T <= 0.01)
       {
         break;
       }
 
+      // 色を計算する
       float opacity = 50.0;
       float k = opacity * tmp * T;
-      vec4 cloudColor = vec4(1.0);
-
       color += cloudColor * k;
     }
 

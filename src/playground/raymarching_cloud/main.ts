@@ -94,7 +94,7 @@ function main() {
         startTime,
         timeUniformLoc,
       });
-      return update();
+      // return update();
     });
   }
 
