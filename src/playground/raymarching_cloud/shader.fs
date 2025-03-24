@@ -3,6 +3,7 @@ precision mediump float;
 
 out vec4 fragColor;
 
+uniform float time;
 uniform vec2 u_resolution;
 
 // 定数

@@ -10,6 +10,10 @@ import {
 import fragmentShaderSource from "./shader.fs";
 import vertexShaderSource from "./shader.vs";
 
+function getNow() {
+  return performance.now() * 0.001;
+}
+
 function main() {
   /**
    * create WebGL context
@@ -51,6 +55,10 @@ function main() {
   const resUniformLoc = gl.getUniformLocation(program, "u_resolution");
   gl.uniform2f(resUniformLoc, gl.canvas.width, gl.canvas.height);
 
+  const timeUniformLoc = gl.getUniformLocation(program, "u_time");
+  const startTime = getNow();
+  gl.uniform1f(timeUniformLoc, startTime);
+
   // create attributes
   const positionAttrLoc = gl.getAttribLocation(program, "a_position"); // look up where the vertex data needs to go.
   gl.enableVertexAttribArray(positionAttrLoc);
@@ -79,7 +87,29 @@ function main() {
     0 /** offset */
   );
 
+  function update() {
+    requestAnimationFrame(() => {
+      render({
+        gl: gl as WebGL2RenderingContext,
+        startTime,
+        timeUniformLoc,
+      });
+      return update();
+    });
+  }
+
+  update();
+}
+
+interface RenderContext {
+  gl: WebGL2RenderingContext;
+  startTime: number;
+  timeUniformLoc: WebGLUniformLocation | null;
+}
+function render({ gl, timeUniformLoc, startTime }: RenderContext) {
+  gl.uniform1f(timeUniformLoc, getNow() - startTime);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.flush();
 }
 
 window.onload = main;
