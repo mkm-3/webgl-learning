@@ -8,7 +8,7 @@ import {
   setRectangle,
   resizeCanvasToDisplaySize,
   showWebGLInfo,
-} from "../../utils";
+} from "../06_3d_ortho_depth/util";
 
 function main() {
   /**

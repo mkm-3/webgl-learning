@@ -12,7 +12,7 @@ import {
   multiplyMat3,
   getTranslationMat3,
   getProjectionMat3,
-} from "./utils";
+} from "../06_3d_ortho_depth/util";
 
 function main() {
   /**

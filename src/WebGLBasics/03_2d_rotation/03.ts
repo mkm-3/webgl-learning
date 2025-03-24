@@ -7,12 +7,7 @@ import {
   resizeCanvasToDisplaySize,
   showWebGLInfo,
   setGeometry,
-  getRotationMat3,
-  getScalingMat3,
-  multiplyMat3,
-  getTranslationMat3,
-  getProjectionMat3,
-} from "../../utils";
+} from "../06_3d_ortho_depth/util";
 
 function main() {
   /**
@@ -46,15 +41,13 @@ function main() {
     throw new Error("Error: No available shader program.");
   }
 
-  const translation: [number, number] = [150, 150];
+  const translation: [number, number] = [100, 100];
   const color: [number, number, number, number] = [
     Math.random(),
     Math.random(),
     Math.random(),
     1,
   ];
-  const rotationDeg = 10;
-  const scale: [number, number] = [0.9, 0.9];
 
   // create vbo
   const positionBuffer = gl.createBuffer();
@@ -65,21 +58,19 @@ function main() {
     program,
     translation,
     color,
-    rotationDeg,
-    scale,
+    rotationDeg: 0,
   });
 }
 
 type RenderContext = {
   program: WebGLProgram;
   translation: [number, number];
+  rotationDeg?: number;
   color: [number, number, number, number];
-  rotationDeg: number;
-  scale: [number, number];
 };
 export function render(
   gl: WebGLRenderingContext,
-  { program, translation, color, rotationDeg, scale }: RenderContext
+  { program, translation, color, rotationDeg = 0 }: RenderContext
 ) {
   /**
    * setup for render process
@@ -94,13 +85,24 @@ export function render(
   resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
 
   // create uniform variables
+  const resUniformLoc = gl.getUniformLocation(program, "u_resolution");
+  gl.uniform2f(resUniformLoc, gl.canvas.width, gl.canvas.height);
+
   const colorUniformLoc = gl.getUniformLocation(program, "u_color");
-  const matrixUniformLoc = gl.getUniformLocation(program, "u_matrix");
+  const translationUniformLoc = gl.getUniformLocation(program, "u_translation");
+  const rotationRadUniformLoc = gl.getUniformLocation(program, "u_rotation");
   if (
+    !assertNonNullable<WebGLUniformLocation>(resUniformLoc) ||
     !assertNonNullable<WebGLUniformLocation>(colorUniformLoc) ||
-    !assertNonNullable<WebGLUniformLocation>(matrixUniformLoc)
+    !assertNonNullable<WebGLUniformLocation>(translationUniformLoc) ||
+    !assertNonNullable<WebGLUniformLocation>(rotationRadUniformLoc)
   ) {
-    console.error(colorUniformLoc, matrixUniformLoc);
+    console.error(
+      resUniformLoc,
+      colorUniformLoc,
+      translationUniformLoc,
+      rotationRadUniformLoc
+    );
     throw new Error("Error: Failed to get uniform variable location.");
   }
 
@@ -129,17 +131,17 @@ export function render(
     0 /** offset */
   );
 
+  // set uniform variable: resolution
+  gl.uniform2f(resUniformLoc, gl.canvas.width, gl.canvas.height);
+
   // set color
   gl.uniform4fv(colorUniformLoc, color);
 
   // set translation
-  let matrix = getProjectionMat3(gl.canvas.width, gl.canvas.height);
-  matrix = multiplyMat3(matrix, getTranslationMat3(translation));
-  matrix = multiplyMat3(matrix, getRotationMat3(rotationDeg));
-  matrix = multiplyMat3(matrix, getScalingMat3(scale));
-  matrix = multiplyMat3(matrix, getTranslationMat3([-50, -75]));
+  gl.uniform2fv(translationUniformLoc, translation);
 
-  gl.uniformMatrix3fv(matrixUniformLoc, false, matrix);
+  // set rotation
+  gl.uniform1f(rotationRadUniformLoc, (Math.PI * rotationDeg) / 180);
 
   // draw rectangles
   gl.drawArrays(gl.TRIANGLES, 0, 18);

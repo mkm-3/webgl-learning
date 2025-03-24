@@ -7,7 +7,7 @@ import {
   resizeCanvasToDisplaySize,
   showWebGLInfo,
   setGeometry,
-} from "../../utils";
+} from "../06_3d_ortho_depth/util";
 
 function main() {
   /**
@@ -41,37 +41,6 @@ function main() {
     throw new Error("Error: No available shader program.");
   }
 
-  const translation: [number, number] = [100, 100];
-  const color: [number, number, number, number] = [
-    Math.random(),
-    Math.random(),
-    Math.random(),
-    1,
-  ];
-
-  // create vbo
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setGeometry(gl);
-
-  render(gl, {
-    program,
-    translation,
-    color,
-    rotationDeg: 0,
-  });
-}
-
-type RenderContext = {
-  program: WebGLProgram;
-  translation: [number, number];
-  rotationDeg?: number;
-  color: [number, number, number, number];
-};
-export function render(
-  gl: WebGLRenderingContext,
-  { program, translation, color, rotationDeg = 0 }: RenderContext
-) {
   /**
    * setup for render process
    */
@@ -82,7 +51,6 @@ export function render(
 
   // create attribute variables
   const positionAttrLoc = gl.getAttribLocation(program, "a_position"); // look up where the vertex data needs to go.
-  resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
 
   // create uniform variables
   const resUniformLoc = gl.getUniformLocation(program, "u_resolution");
@@ -90,21 +58,61 @@ export function render(
 
   const colorUniformLoc = gl.getUniformLocation(program, "u_color");
   const translationUniformLoc = gl.getUniformLocation(program, "u_translation");
-  const rotationRadUniformLoc = gl.getUniformLocation(program, "u_rotation");
   if (
     !assertNonNullable<WebGLUniformLocation>(resUniformLoc) ||
     !assertNonNullable<WebGLUniformLocation>(colorUniformLoc) ||
-    !assertNonNullable<WebGLUniformLocation>(translationUniformLoc) ||
-    !assertNonNullable<WebGLUniformLocation>(rotationRadUniformLoc)
+    !assertNonNullable<WebGLUniformLocation>(translationUniformLoc)
   ) {
-    console.error(
-      resUniformLoc,
-      colorUniformLoc,
-      translationUniformLoc,
-      rotationRadUniformLoc
-    );
+    console.error(resUniformLoc, colorUniformLoc, translationUniformLoc);
     throw new Error("Error: Failed to get uniform variable location.");
   }
+
+  const translation: [number, number] = [100, 100];
+  const color: [number, number, number, number] = [
+    Math.random(),
+    Math.random(),
+    Math.random(),
+    1,
+  ];
+
+  // create position buffer
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  setGeometry(gl);
+
+  render(gl, {
+    program,
+    positionAttrLoc,
+    resUniformLoc,
+    colorUniformLoc,
+    translationUniformLoc,
+    translation,
+    color,
+  });
+}
+
+type RenderContext = {
+  program: WebGLProgram;
+  positionAttrLoc: number;
+  resUniformLoc: WebGLUniformLocation;
+  colorUniformLoc: WebGLUniformLocation;
+  translationUniformLoc: WebGLUniformLocation;
+  translation: [number, number];
+  color: [number, number, number, number];
+};
+export function render(
+  gl: WebGLRenderingContext,
+  {
+    program,
+    positionAttrLoc,
+    resUniformLoc,
+    colorUniformLoc,
+    translationUniformLoc,
+    translation,
+    color,
+  }: RenderContext
+) {
+  resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
 
   // set webgl configuration
   // clip space -> pixel space
@@ -139,9 +147,6 @@ export function render(
 
   // set translation
   gl.uniform2fv(translationUniformLoc, translation);
-
-  // set rotation
-  gl.uniform1f(rotationRadUniformLoc, (Math.PI * rotationDeg) / 180);
 
   // draw rectangles
   gl.drawArrays(gl.TRIANGLES, 0, 18);
