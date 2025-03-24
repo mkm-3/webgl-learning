@@ -1,5 +1,5 @@
-import fragmentShaderSource from "./shader.fs?raw";
-import vertexShaderSource from "./shader.vs?raw";
+import fragmentShaderSource from "./shader.fs";
+import vertexShaderSource from "./shader.vs";
 import {
   assertNonNullable,
   createProgram,
@@ -14,10 +14,9 @@ function main() {
   /**
    * create WebGL context
    */
-  const canvas = document.getElementById("main_canvas");
-  if (!assertNonNullable<HTMLCanvasElement>(canvas)) {
-    throw new Error("No canvas ref found.");
-  }
+  const canvas = assertNonNullable<HTMLCanvasElement>(
+    document.getElementById("main_canvas") as HTMLCanvasElement | null
+  );
 
   resizeCanvasToDisplaySize(canvas);
 

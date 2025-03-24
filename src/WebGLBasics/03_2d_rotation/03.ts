@@ -1,5 +1,5 @@
-import fragmentShaderSource from "./shader.fs?raw";
-import vertexShaderSource from "./shader.vs?raw";
+import fragmentShaderSource from "./shader.fs";
+import vertexShaderSource from "./shader.vs";
 import {
   assertNonNullable,
   createProgram,

@@ -8,8 +8,8 @@ import {
 } from "./util";
 
 // import shaders
-import fragmentShaderSource from "./shader.fs?raw";
-import vertexShaderSource from "./shader.vs?raw";
+import fragmentShaderSource from "./shader.fs";
+import vertexShaderSource from "./shader.vs";
 import { setColors, setGeometry } from "./primitive";
 
 function main() {
