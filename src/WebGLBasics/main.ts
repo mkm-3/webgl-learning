@@ -1,1 +1,1 @@
-import "./09_animation.ts/09";
+import "./10_texture/10";
