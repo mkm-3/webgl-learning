@@ -41,7 +41,7 @@ float fbm(vec2 freq)
 {
   float res;
   float amp = 1.0;
-  const int OCTAVES = 8;
+  const int OCTAVES = 5;
 
   // 周波数を一定の割合で増加させ（２倍にする）、振幅を減らしながらノイズを繰り返し重ねる
   for(int i = 0; i < OCTAVES; i++)
@@ -102,7 +102,20 @@ void main() {
       // 光源の影響を計算
       vec3 normal = get_normal(rayPos, radius);
       float diff = dot(normal, lightPos);
-      color = vec4(vec3(1.0) * diff * fbm(uv + 0.2) , 1.0);
+
+      // 動くマーブル模様を計算する
+      vec2 q = vec2(0.0);
+      q.x = fbm(uv);
+      q.y = fbm(uv  + vec2(1.0));
+
+      vec2 r= vec2(0.0);
+      r.x = fbm(uv + (4.0 * q) + vec2(1.7, 9.2) + (0.15 * u_time));
+      r.y = fbm(uv + (4.0 * q) + vec2(8.3, 2.8) + (0.12 * u_time));
+
+      float f = fbm(uv + 4.0 * r);
+      float coef = (f * f * f + (0.6 * f * f) + (0.5 * f));
+
+      color = vec4(vec3(1.0) * diff * coef , 1.0);
       break;
     }
 
