@@ -54,6 +54,20 @@ float fbm(vec2 freq)
   return res;
 }
 
+float marble_pattern_noise(vec2 uv)
+{
+  vec2 q = vec2(0.0);
+  q.x = fbm(uv);
+  q.y = fbm(uv  + vec2(1.0));
+
+  vec2 r= vec2(0.0);
+  r.x = fbm(uv + (4.0 * q) + vec2(1.7, 9.2) + (0.15 * u_time));
+  r.y = fbm(uv + (4.0 * q) + vec2(8.3, 2.8) + (0.12 * u_time));
+
+  float f = fbm(uv + 4.0 * r);
+  return f * f * f + (0.6 * f * f) + (0.5 * f);
+}
+
 
 // 球の中心とrayの座標の距離を計算する
 float calc_dist(vec3 pos, float size)
@@ -104,18 +118,29 @@ void main() {
       float diff = dot(normal, lightPos);
 
       // 動くマーブル模様を計算する
-      vec2 q = vec2(0.0);
-      q.x = fbm(uv);
-      q.y = fbm(uv  + vec2(1.0));
+      float coef = diff * marble_pattern_noise(uv);
 
-      vec2 r= vec2(0.0);
-      r.x = fbm(uv + (4.0 * q) + vec2(1.7, 9.2) + (0.15 * u_time));
-      r.y = fbm(uv + (4.0 * q) + vec2(8.3, 2.8) + (0.12 * u_time));
+      // 表面の色を計算する
+      /*
+        Target colors
+        =============
+        x   color
+        0.0 vec4(0.0471, 0.0471, 0.0471, 1.0);
+        0.2 vec4(1.0, 0.5, 0.4, 1.0);
+        0.4 vec4(1.0, 1.0, 0.5, 1.0);
+        0.6 vec4(0.4, 0.85, 0.4, 1.0);
+        0.8 vec4(0.2, 0.7, 1.0, 1.0);
+        1.0 vec4(0.8, 0.3, 0.8, 1.0);
+      */
 
-      float f = fbm(uv + 4.0 * r);
-      float coef = (f * f * f + (0.6 * f * f) + (0.5 * f));
+      vec2 st = (uv + vec2(1.0)) / 2.0;
 
-      color = vec4(vec3(1.0) * diff * coef , 1.0);
+      float r = cos(u_time / 2.0) * 0.7;
+      float g = sin(u_time / 2.0) * 0.7;
+      float b = sin(1.0 - g) * 0.7;
+
+      // noiseをmixせずに乗算すると正しくブレンドされない
+      color = vec4(mix(vec3(r, g, b), vec3(coef), 0.7) , 1.0);
       break;
     }
 
